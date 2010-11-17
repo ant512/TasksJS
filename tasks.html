@@ -15,15 +15,56 @@ var Tasks = {
 		this.parent = parent;
 	},
 	
-	FinishToStartDependency: function(task) {
-		this.task = task;
+	/**
+	 * Owning task will start when the task it is dependent on finishes.
+	 * @param owner The task that owns this dependency.
+	 * @param dependentOn Task that this task is dependent on.
+	 */
+	FinishToStartDependency: function(owner, dependentOn) {
+		this.owner = owner;
+		this.dependentOn = dependentOn;
 	},
+	
+	/**
+	 * Owning task will finish when the task it is dependent on finishes.
+	 * @param owner The task that owns this dependency.
+	 * @param dependentOn Task that this task is dependent on.
+	 */
+	FinishToFinishDependency: function(owner, dependentOn) {
+		this.owner = owner;
+		this.dependentOn = dependentOn;
+	},
+	
+	/**
+	 * Owning task will start when the task it is dependent on starts.
+	 * @param owner The task that owns this dependency.
+	 * @param dependentOn Task that this task is dependent on.
+	 */
+	StartToStartDependency: function(owner, dependentOn) {
+		this.owner = owner;
+		this.dependentOn = dependentOn;
+	},
+	
+	/**
+	 * Owning task will finish when the task it is dependent on starts.
+	 * @param owner The task that owns this dependency.
+	 * @param dependentOn Task that this task is dependent on.
+	 */
+	StartToFinishDependency: function(owner, dependentOn) {
+		this.owner = owner;
+		this.dependentOn = dependentOn;
+	}
 }
 
 
+/** TaskList Methods */
 
 Tasks.TaskList.prototype.at = function(index) {
 	return this.taskList[index];
+}
+
+Tasks.TaskList.prototype.getCount = function() {
+	return this.taskList.length;
 }
 
 Tasks.TaskList.prototype.add = function(task) {
@@ -81,7 +122,7 @@ Tasks.TaskList.prototype.sort = function() {
 			var dependencies = this.taskList[i].getDependencies();
 			
 			for (var j in dependencies) {
-				if (dependencies[j].getTask() == task) {
+				if (dependencies[j].getDependentOn() == task) {
 					removedDependencyCounts[i]++;
 					
 					if (dependencies.length == removedDependencyCounts[i]) {
@@ -96,6 +137,7 @@ Tasks.TaskList.prototype.sort = function() {
 }
 
 
+/** Task Methods **/
 
 Tasks.Task.prototype.hasDependencies = function() {
 	return (this.dependencies.length > 0);
@@ -105,12 +147,20 @@ Tasks.Task.prototype.addDependency = function(dependency) {
 	this.dependencies.push(dependency);
 }
 
+Tasks.Task.prototype.getName = function() {
+	return this.name;
+}
+
 Tasks.Task.prototype.getDependencies = function() {
 	return this.dependencies;
 }
 
 Tasks.Task.prototype.getStartDate = function() {
 	return this.startDate;
+}
+
+Tasks.Task.prototype.getEndDate = function() {
+	return new Date(this.startDate.getTime() + this.duration);
 }
 
 Tasks.Task.prototype.getDuration = function() {
@@ -132,28 +182,52 @@ Tasks.Task.prototype.recalculateStartDate = function(earliestDate) {
 }
 
 
-
+/** FinishToStartDependency Methods **/
 
 Tasks.FinishToStartDependency.prototype.getStartDate = function() {
-	return new Date(this.task.getStartDate().getTime() + this.task.getDuration());
+	return this.dependentOn.getEndDate();
 }
 
-Tasks.FinishToStartDependency.prototype.getTask = function() {
-	return this.task;
+Tasks.FinishToStartDependency.prototype.getOwner = function() {
+	return this.owner;
 }
 
+Tasks.FinishToStartDependency.prototype.getDependentOn = function() {
+	return this.dependentOn;
+}
+
+
+/** FinishToFinishDependency Methods **/
+
+Tasks.FinishToFinishDependency.prototype.getStartDate = function() {
+	return new Date(this.dependentOn.getEndDate().getDate() - this.owner.getDuration());
+}
+
+Tasks.FinishToFinishDependency.prototype.getOwner = function() {
+	return this.owner;
+}
+
+Tasks.FinishToFinishDependency.prototype.getDependentOn = function() {
+	return this.dependentOn;
+}
 
 
 var taskList = new Tasks.TaskList();
-taskList.add(new Tasks.Task("Task 1", new Date(), 3000000, null));
-taskList.add(new Tasks.Task("Task 2", new Date(), 5000000, null));
-taskList.add(new Tasks.Task("Task 1.1", new Date(), 300000, taskList.at(0)));
+taskList.add(new Tasks.Task("Task 1", new Date(2010, 0, 1, 9, 30, 0, 0), 3600000, null));
+taskList.add(new Tasks.Task("Task 2", new Date(2010, 0, 1, 9, 30, 0, 0), 3600000, null));
+taskList.add(new Tasks.Task("Task 1.1", new Date(2010, 0, 1, 9, 30, 0, 0), 360000, taskList.at(0)));
 
-taskList.at(1).addDependency(new Tasks.FinishToStartDependency(taskList.at(0)));
+taskList.at(1).addDependency(new Tasks.FinishToStartDependency(taskList.at(1), taskList.at(0)));
 
 alert(taskList.at(0).getStartDate());
 
-taskList.recalculateDates(new Date());
+taskList.recalculateDates(new Date(2010, 0, 1, 9, 30, 0, 0));
+
+var str = "";
+for (var i = 0; i < taskList.getCount(); ++i) {
+	str += taskList.at(i).getName() + ' ' + taskList.at(i).getStartDate() + '\n';
+}
+alert(str)
 
 </script>
 </head>
