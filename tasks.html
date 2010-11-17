@@ -195,7 +195,8 @@ Tasks.TaskList.prototype.getTasksForParent = function(parent) {
 		}
 	}
 	
-	// TODO: Sort into orderNumber order
+	// Sort the child list by order number
+	children.sort(function(a, b) { return a.getOrderNumber() - b.getOrderNumber(); });
 	
 	return children;
 }
