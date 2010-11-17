@@ -95,11 +95,23 @@ Tasks.TaskList.prototype.add = function(task) {
  * latest date.
  */
 Tasks.TaskList.prototype.recalculateDates = function(earliestDate) {
+	
+	// Ensure that the list is sorted topologically before we begin.  This means
+	// that all tasks will have the correct start and end dates before any
+	// dependent tasks have their dates calculated
 	this.sort();
 	
+	// Recalculate the start date for all tasks in the list
 	for (var i in this.taskList) {
 		this.taskList[i].recalculateStartDate(earliestDate);
 	}
+	
+	// At this point, we have a problem.  The start of each phase does not
+	// necessarily match the start of the earliest task, and the end of the
+	// phase does not necessarily match the end of the latest task.  The
+	// duration is also wrong.
+	
+	// Additionally, any tasks dependent on the phase will have the wrong dates.
 }
 
 /**
