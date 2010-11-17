@@ -152,6 +152,54 @@ Tasks.TaskList.prototype.sort = function() {
 	this.taskList = sortedTasks;
 }
 
+/**
+ * Gets a list of tasks (as an array) that belong to the specified parent.  The
+ * tasks are ordered by their orderNumber property.  If parent is null, the
+ * top-level (tasks without parents) are retrieved.
+ * @param parent The parent task for which the child list is to be retrieved.
+ * If this is null, the top-level tasks are returned.
+ * @return An array of tasks belonging to the specified parent.
+ */
+Tasks.TaskList.prototype.getTasksForParent = function(parent) {
+	var children = new Array();
+	
+	for (var i in this.taskList) {
+		var task = this.taskList[i];
+		var isChild = false;
+		
+		for (var j in task.getDependencies()) {
+			var dependency = task.getDependencies()[j];
+			
+			// Check if the dependency is a ParentChildDependency object.
+			// This (typechecking to determine behaviour) is ugly, but it saves
+			// us maintaining a real tree structure and trying to duplicate the
+			// dependency behaviour within that structure
+			if (!(dependency instanceof Tasks.ParentChildDependency)) continue;
+							
+			// Task is a child of *something*.
+			isChild = true;
+			
+			// If we're looking for top-level tasks, this task is no good to us
+			if (parent == null) break;
+			
+			// Check if the task is a child of the specified parent
+			if (dependency.getDependentOn() != parent) continue;
+			
+			// Task is a child of the parent, so remember it
+			children.push(task);
+		}
+		
+		// If we want them, did we find a top-level task?
+		if (!isChild && parent == null) {
+			children.push(task);
+		}
+	}
+	
+	// TODO: Sort into orderNumber order
+	
+	return children;
+}
+
 
 /** Task Methods **/
 
@@ -432,6 +480,7 @@ Tasks.ParentChildDependency.prototype.getDependentOn = function() {
 
 
 var taskList = new Tasks.TaskList();
+
 taskList.add(new Tasks.Task("Task 1", 3600000, 1));
 taskList.add(new Tasks.Task("Task 2", 3600000, 2));
 taskList.add(new Tasks.Task("Task 1.1", 3600000, 1));
@@ -448,19 +497,34 @@ taskList.at(3).addDependency(new Tasks.ParentChildDependency(taskList.at(0)));
 taskList.at(3).addDependency(new Tasks.FinishToStartDependency(taskList.at(2)));
 
 // Display task list before date calculations
-alertTasks(taskList);
+//alertTaskList(taskList);
 
 // Recalculate the dates of all tasks, using the submitted date as the start
 // date of the project
 taskList.recalculateDates(new Date(2010, 0, 1, 9, 30, 0, 0));
 
 // Display task list post date calculations
-alertTasks(taskList);
+alertTaskList(taskList);
 
-function alertTasks(tasks) {
+// Get the top-level tasks
+alertTaskArray(taskList.getTasksForParent(null));
+
+// Get the children of task 1
+alertTaskArray(taskList.getTasksForParent(taskList.at(0)));
+
+
+function alertTaskList(tasks) {
 	var str = "";
 	for (var i = 0; i < tasks.getCount(); ++i) {
 		str += tasks.at(i).getName() + ' ' + tasks.at(i).getStartDate() + '\n';
+	}
+	alert(str);
+}
+
+function alertTaskArray(tasks) {
+	var str = "";
+	for (var i in tasks) {
+		str += tasks[i].getName() + ' ' + tasks[i].getStartDate() + '\n';
 	}
 	alert(str);
 }
