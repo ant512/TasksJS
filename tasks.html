@@ -1,0 +1,164 @@
+<html>
+<head>
+<script>
+
+var Tasks = {
+	TaskList: function() {
+		this.taskList = new Array();
+	},
+
+	Task: function(name, startDate, duration, parent) {
+		this.name = name;
+		this.startDate = startDate;
+		this.dependencies = new Array();
+		this.duration = duration;
+		this.parent = parent;
+	},
+	
+	FinishToStartDependency: function(task) {
+		this.task = task;
+	},
+}
+
+
+
+Tasks.TaskList.prototype.at = function(index) {
+	return this.taskList[index];
+}
+
+Tasks.TaskList.prototype.add = function(task) {
+	this.taskList.push(task);
+}
+
+/**
+ * Recalculates the start date of all tasks in the list.  Relies on the sort()
+ * function to ensure that all tasks on which task T is dependent on are
+ * calculated before T is reached.  Recalculating dates becomes a simple matter
+ * of asking the task's dependencies for their start dates, and choosing the
+ * latest date.
+ */
+Tasks.TaskList.prototype.recalculateDates = function(earliestDate) {
+	this.sort();
+	
+	for (var i in this.taskList) {
+		this.taskList[i].recalculateStartDate(earliestDate);
+	}
+}
+
+/**
+ * Topological sort of the task list.  Each task is ordered so that the tasks
+ * that it depends on come before it in the list.  Therefore, the first task(s)
+ * in the list will always be those tasks that are not dependent on any other.
+ */
+Tasks.TaskList.prototype.sort = function() {
+	var rootTasks = new Array();
+	var removedDependencyCounts = new Array();
+	var sortedTasks = new Array();
+	
+	// Create list of tasks that are not dependent on any other
+	for (var i in this.taskList) {
+		if (!this.taskList[i].hasDependencies()) {
+			rootTasks.push(this.taskList[i]);
+		}
+		
+		removedDependencyCounts[i] = 0;
+	}
+	
+	// Sort the graph
+	while (rootTasks.length > 0) {
+		
+		// Remove the first task from the root list
+		var task = rootTasks[0];
+		rootTasks.splice(0, 1);
+		
+		// Add the task to the sorted list
+		sortedTasks.push(task);
+		
+		// Loop through the tasks that are dependent on this, reducing their
+		// counts and, for each task with no subsequent dependencies, adding it
+		// to the sorted list
+		for (var i in this.taskList) {
+			var dependencies = this.taskList[i].getDependencies();
+			
+			for (var j in dependencies) {
+				if (dependencies[j].getTask() == task) {
+					removedDependencyCounts[i]++;
+					
+					if (dependencies.length == removedDependencyCounts[i]) {
+						rootTasks.push(this.taskList[i]);
+					}
+				}
+			}
+		}
+	}
+	
+	this.taskList = sortedTasks;
+}
+
+
+
+Tasks.Task.prototype.hasDependencies = function() {
+	return (this.dependencies.length > 0);
+}
+
+Tasks.Task.prototype.addDependency = function(dependency) {
+	this.dependencies.push(dependency);
+}
+
+Tasks.Task.prototype.getDependencies = function() {
+	return this.dependencies;
+}
+
+Tasks.Task.prototype.getStartDate = function() {
+	return this.startDate;
+}
+
+Tasks.Task.prototype.getDuration = function() {
+	return this.duration;
+}
+
+Tasks.Task.prototype.recalculateStartDate = function(earliestDate) {
+	var latestDate = earliestDate;
+	
+	for (var i in this.dependencies) {
+		var dependencyDate = this.dependencies[i].getStartDate();
+		
+		if (dependencyDate > latestDate) {
+			latestDate = dependencyDate;
+		}
+	}
+	
+	this.startDate = latestDate;
+}
+
+
+
+
+Tasks.FinishToStartDependency.prototype.getStartDate = function() {
+	return new Date(this.task.getStartDate().getTime() + this.task.getDuration());
+}
+
+Tasks.FinishToStartDependency.prototype.getTask = function() {
+	return this.task;
+}
+
+
+
+var taskList = new Tasks.TaskList();
+taskList.add(new Tasks.Task("Task 1", new Date(), 3000000, null));
+taskList.add(new Tasks.Task("Task 2", new Date(), 5000000, null));
+taskList.add(new Tasks.Task("Task 1.1", new Date(), 300000, taskList.at(0)));
+
+taskList.at(1).addDependency(new Tasks.FinishToStartDependency(taskList.at(0)));
+
+alert(taskList.at(0).getStartDate());
+
+taskList.recalculateDates(new Date());
+
+</script>
+</head>
+
+<body>
+
+</body>
+</html>
