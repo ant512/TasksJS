@@ -7,51 +7,67 @@ var Tasks = {
 		this.taskList = new Array();
 	},
 
-	Task: function(name, startDate, duration, parent) {
+	/**
+	 * Task object.
+	 * @param name Name of the task.
+	 * @param duration The length of the task in milliseconds.
+	 * @param orderNumber The order number of the task when it is displayed.
+	 */
+	Task: function(name, duration, orderNumber) {
 		this.name = name;
-		this.startDate = startDate;
+		this.startDate = new Date();
 		this.dependencies = new Array();
 		this.duration = duration;
-		this.parent = parent;
+		this.orderNumber = orderNumber;
 	},
 	
 	/**
 	 * Owning task will start when the task it is dependent on finishes.
-	 * @param owner The task that owns this dependency.
 	 * @param dependentOn Task that this task is dependent on.
 	 */
-	FinishToStartDependency: function(owner, dependentOn) {
-		this.owner = owner;
+	FinishToStartDependency: function(dependentOn) {
+		this.owner = null;
 		this.dependentOn = dependentOn;
 	},
 	
 	/**
 	 * Owning task will finish when the task it is dependent on finishes.
-	 * @param owner The task that owns this dependency.
 	 * @param dependentOn Task that this task is dependent on.
 	 */
-	FinishToFinishDependency: function(owner, dependentOn) {
-		this.owner = owner;
+	FinishToFinishDependency: function(dependentOn) {
+		this.owner = null;
 		this.dependentOn = dependentOn;
 	},
 	
 	/**
 	 * Owning task will start when the task it is dependent on starts.
-	 * @param owner The task that owns this dependency.
 	 * @param dependentOn Task that this task is dependent on.
 	 */
-	StartToStartDependency: function(owner, dependentOn) {
-		this.owner = owner;
+	StartToStartDependency: function(dependentOn) {
+		this.owner = null;
 		this.dependentOn = dependentOn;
 	},
 	
 	/**
 	 * Owning task will finish when the task it is dependent on starts.
-	 * @param owner The task that owns this dependency.
 	 * @param dependentOn Task that this task is dependent on.
 	 */
-	StartToFinishDependency: function(owner, dependentOn) {
-		this.owner = owner;
+	StartToFinishDependency: function(dependentOn) {
+		this.owner = null;
+		this.dependentOn = dependentOn;
+	},
+	
+	/**
+	 * Owning task is a child of the task it is dependent on.  This simulates
+	 * a tree structure without storing the data as a tree.  The most intensive
+	 * calculations require the tasks in the form of a list; the tree is mainly
+	 * for visualising the data and for (in this particular case) ensuring that
+	 * child tasks start at the same time as their parent (at the earliest) and
+	 * that parent tasks start at the same time as their first child.
+	 * @param dependentOn Task that this task is dependent on.
+	 */
+	ParentChildDependency: function(dependentOn) {
+		this.owner = null;
 		this.dependentOn = dependentOn;
 	}
 }
@@ -139,34 +155,87 @@ Tasks.TaskList.prototype.sort = function() {
 
 /** Task Methods **/
 
+/**
+ * Check if the task has dependencies or not.
+ * @return True if the task has dependencies, or false if not.
+ */
 Tasks.Task.prototype.hasDependencies = function() {
 	return (this.dependencies.length > 0);
 }
 
+/**
+ * Adds a dependency to this task's list of dependencies.  Automatically sets
+ * the dependency's owner to the current task.
+ * @param dependency The dependency to add.
+ */
 Tasks.Task.prototype.addDependency = function(dependency) {
+	
+	// We need to ensure that the dependency knows it is owned by this task
+	// before we add it to the task's list of dependencies.
+	dependency.setOwner(this);
+	
 	this.dependencies.push(dependency);
 }
 
+/**
+ * Gets the name of the task.
+ * @return The name of the task.
+ */
 Tasks.Task.prototype.getName = function() {
 	return this.name;
 }
 
+/**
+ * Gets the order number of the task.  The order number is used to display tasks
+ * in the correct order.  Tasks should not have the same order number their
+ * siblings (ie. other tasks that have a ParentChildDependency on the same task
+ * as each other).
+ * @return The order number of the task.
+ */
+Tasks.Task.prototype.getOrderNumber = function() {
+	return this.orderNumber;
+}
+
+/**
+ * Gets the list of dependencies that this task has.
+ * @return The list of dependencies of this task.
+ */
 Tasks.Task.prototype.getDependencies = function() {
 	return this.dependencies;
 }
 
+/**
+ * Gets the date on which the task starts.
+ * @return The start date of the task.
+ */
 Tasks.Task.prototype.getStartDate = function() {
 	return this.startDate;
 }
 
+/**
+ * Gets the end date of the task.
+ * @return The end date of the task.
+ */
 Tasks.Task.prototype.getEndDate = function() {
 	return new Date(this.startDate.getTime() + this.duration);
 }
 
+/**
+ * Gets the duration of the task in milliseconds.
+ * @return The duration of the task in milliseconds.
+ */
 Tasks.Task.prototype.getDuration = function() {
 	return this.duration;
 }
 
+/**
+ * Recalculates the start date of the task based on the start dates of its
+ * dependencies.  The earliest date that the task will use as its start date
+ * (in the situation where it has no dependencies, for example) is the value
+ * passed as earliestDate.
+ * @param earliestDate The earliest date that the task can use as its start
+ * date.
+ */
 Tasks.Task.prototype.recalculateStartDate = function(earliestDate) {
 	var latestDate = earliestDate;
 	
@@ -190,6 +259,15 @@ Tasks.Task.prototype.recalculateStartDate = function(earliestDate) {
  */
 Tasks.FinishToStartDependency.prototype.getStartDate = function() {
 	return this.dependentOn.getEndDate();
+}
+
+/**
+ * Set the owner of the dependency.  This is done automatically by the Task
+ * object's addDependency() method and shouldn't be used elsewhere.
+ * @param owner The owner of the dependency.
+ */
+Tasks.FinishToStartDependency.prototype.setOwner = function(owner) {
+	this.owner = owner;
 }
 
 /**
@@ -220,6 +298,15 @@ Tasks.FinishToFinishDependency.prototype.getStartDate = function() {
 }
 
 /**
+ * Set the owner of the dependency.  This is done automatically by the Task
+ * object's addDependency() method and shouldn't be used elsewhere.
+ * @param owner The owner of the dependency.
+ */
+Tasks.FinishToFinishDependency.prototype.setOwner = function(owner) {
+	this.owner = owner;
+}
+
+/**
  * Get the task that owns the dependency.
  * @return The task that owns the dependency.
  */
@@ -244,6 +331,15 @@ Tasks.FinishToFinishDependency.prototype.getDependentOn = function() {
  */
 Tasks.StartToStartDependency.prototype.getStartDate = function() {
 	return new Date(this.dependentOn.getStartDate());
+}
+
+/**
+ * Set the owner of the dependency.  This is done automatically by the Task
+ * object's addDependency() method and shouldn't be used elsewhere.
+ * @param owner The owner of the dependency.
+ */
+Tasks.StartToStartDependency.prototype.setOwner = function(owner) {
+	this.owner = owner;
 }
 
 /**
@@ -274,6 +370,15 @@ Tasks.StartToFinishDependency.prototype.getStartDate = function() {
 }
 
 /**
+ * Set the owner of the dependency.  This is done automatically by the Task
+ * object's addDependency() method and shouldn't be used elsewhere.
+ * @param owner The owner of the dependency.
+ */
+Tasks.StartToFinishDependency.prototype.setOwner = function(owner) {
+	this.owner = owner;
+}
+
+/**
  * Get the task that owns the dependency.
  * @return The task that owns the dependency.
  */
@@ -290,17 +395,66 @@ Tasks.StartToFinishDependency.prototype.getDependentOn = function() {
 }
 
 
+/** ParentChildDependency Methods **/
+
+/**
+ * Get the start date of the task.
+ * @return The start date of the task.
+ */
+Tasks.ParentChildDependency.prototype.getStartDate = function() {
+	return this.dependentOn.getStartDate();
+}
+
+/**
+ * Set the owner of the dependency.  This is done automatically by the Task
+ * object's addDependency() method and shouldn't be used elsewhere.
+ * @param owner The owner of the dependency.
+ */
+Tasks.ParentChildDependency.prototype.setOwner = function(owner) {
+	this.owner = owner;
+}
+
+/**
+ * Get the task that owns the dependency.
+ * @return The task that owns the dependency.
+ */
+Tasks.ParentChildDependency.prototype.getOwner = function() {
+	return this.owner;
+}
+
+/**
+ * Get the task that the owner is dependent on.
+ * @return The task that the owner is dependent on.
+ */
+Tasks.ParentChildDependency.prototype.getDependentOn = function() {
+	return this.dependentOn;
+}
+
+
 var taskList = new Tasks.TaskList();
-taskList.add(new Tasks.Task("Task 1", new Date(2010, 0, 1, 9, 30, 0, 0), 3600000, null));
-taskList.add(new Tasks.Task("Task 2", new Date(2010, 0, 1, 9, 30, 0, 0), 3600000, null));
-taskList.add(new Tasks.Task("Task 1.1", new Date(2010, 0, 1, 9, 30, 0, 0), 360000, taskList.at(0)));
+taskList.add(new Tasks.Task("Task 1", 3600000, 1));
+taskList.add(new Tasks.Task("Task 2", 3600000, 2));
+taskList.add(new Tasks.Task("Task 1.1", 3600000, 1));
+taskList.add(new Tasks.Task("Task 1.2", 3600000, 2));
 
-taskList.at(1).addDependency(new Tasks.FinishToStartDependency(taskList.at(1), taskList.at(0)));
+// Make task 2 dependent on task 1
+taskList.at(1).addDependency(new Tasks.FinishToStartDependency(taskList.at(0)));
 
+// Make tasks 1.1 and 1.2 children of task 1
+taskList.at(2).addDependency(new Tasks.ParentChildDependency(taskList.at(0)));
+taskList.at(3).addDependency(new Tasks.ParentChildDependency(taskList.at(0)));
+
+// Make task 1.2 dependent on task 1.1
+taskList.at(3).addDependency(new Tasks.FinishToStartDependency(taskList.at(2)));
+
+// Display task list before date calculations
 alertTasks(taskList);
 
+// Recalculate the dates of all tasks, using the submitted date as the start
+// date of the project
 taskList.recalculateDates(new Date(2010, 0, 1, 9, 30, 0, 0));
 
+// Display task list post date calculations
 alertTasks(taskList);
 
 function alertTasks(tasks) {
