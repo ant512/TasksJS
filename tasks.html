@@ -184,14 +184,26 @@ Tasks.Task.prototype.recalculateStartDate = function(earliestDate) {
 
 /** FinishToStartDependency Methods **/
 
+/**
+ * Get the start date of the task.
+ * @return The start date of the task.
+ */
 Tasks.FinishToStartDependency.prototype.getStartDate = function() {
 	return this.dependentOn.getEndDate();
 }
 
+/**
+ * Get the task that owns the dependency.
+ * @return The task that owns the dependency.
+ */
 Tasks.FinishToStartDependency.prototype.getOwner = function() {
 	return this.owner;
 }
 
+/**
+ * Get the task that the owner is dependent on.
+ * @return The task that the owner is dependent on.
+ */
 Tasks.FinishToStartDependency.prototype.getDependentOn = function() {
 	return this.dependentOn;
 }
@@ -199,15 +211,81 @@ Tasks.FinishToStartDependency.prototype.getDependentOn = function() {
 
 /** FinishToFinishDependency Methods **/
 
+/**
+ * Get the start date of the task.
+ * @return The start date of the task.
+ */
 Tasks.FinishToFinishDependency.prototype.getStartDate = function() {
 	return new Date(this.dependentOn.getEndDate().getDate() - this.owner.getDuration());
 }
 
+/**
+ * Get the task that owns the dependency.
+ * @return The task that owns the dependency.
+ */
 Tasks.FinishToFinishDependency.prototype.getOwner = function() {
 	return this.owner;
 }
 
+/**
+ * Get the task that the owner is dependent on.
+ * @return The task that the owner is dependent on.
+ */
 Tasks.FinishToFinishDependency.prototype.getDependentOn = function() {
+	return this.dependentOn;
+}
+
+
+/** StartToStartDependency Methods **/
+
+/**
+ * Get the start date of the task.
+ * @return The start date of the task.
+ */
+Tasks.StartToStartDependency.prototype.getStartDate = function() {
+	return new Date(this.dependentOn.getStartDate());
+}
+
+/**
+ * Get the task that owns the dependency.
+ * @return The task that owns the dependency.
+ */
+Tasks.StartToStartDependency.prototype.getOwner = function() {
+	return this.owner;
+}
+
+/**
+ * Get the task that the owner is dependent on.
+ * @return The task that the owner is dependent on.
+ */
+Tasks.StartToStartDependency.prototype.getDependentOn = function() {
+	return this.dependentOn;
+}
+
+
+/** StartToFinishDependency Methods **/
+
+/**
+ * Get the start date of the task.
+ * @return The start date of the task.
+ */
+Tasks.StartToFinishDependency.prototype.getStartDate = function() {
+	return new Date(this.dependentOn.getStartDate().getTime() - this.owner.getDuration());
+}
+
+/**
+ * Get the task that owns the dependency.
+ * @return The task that owns the dependency.
+ */
+Tasks.StartToFinishDependency.prototype.getOwner = function() {
+	return this.owner;
+}
+
+/**
+ * Get the task that the owner is dependent on.
+ * @return The task that the owner is dependent on.
+ */
+Tasks.StartToFinishDependency.prototype.getDependentOn = function() {
 	return this.dependentOn;
 }
 
@@ -219,15 +297,19 @@ taskList.add(new Tasks.Task("Task 1.1", new Date(2010, 0, 1, 9, 30, 0, 0), 36000
 
 taskList.at(1).addDependency(new Tasks.FinishToStartDependency(taskList.at(1), taskList.at(0)));
 
-alert(taskList.at(0).getStartDate());
+alertTasks(taskList);
 
 taskList.recalculateDates(new Date(2010, 0, 1, 9, 30, 0, 0));
 
-var str = "";
-for (var i = 0; i < taskList.getCount(); ++i) {
-	str += taskList.at(i).getName() + ' ' + taskList.at(i).getStartDate() + '\n';
+alertTasks(taskList);
+
+function alertTasks(tasks) {
+	var str = "";
+	for (var i = 0; i < tasks.getCount(); ++i) {
+		str += tasks.at(i).getName() + ' ' + tasks.at(i).getStartDate() + '\n';
+	}
+	alert(str);
 }
-alert(str)
 
 </script>
 </head>
