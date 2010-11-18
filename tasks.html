@@ -591,10 +591,10 @@ alertTaskArray(taskList);
 function alertTaskArray(tasks) {
 	var str = "";
 	for (var i in tasks) {
-		str += tasks[i].getName() + ' ' + tasks[i].getStartDate() + '\n';
+		str += tasks[i].getName() + ': ' + tasks[i].getStartDate() + ' - ' + tasks[i].getEndDate()+ '\n';
 		
 		for (var j in tasks[i].children) {
-			str += tasks[i].children[j].getName() + ' ' + tasks[i].children[j].getStartDate() + '\n';
+			str += tasks[i].children[j].getName() + ': ' + tasks[i].children[j].getStartDate() + ' - ' + tasks[i].children[j].getEndDate() + '\n';
 		}
 	}
 	alert(str);
