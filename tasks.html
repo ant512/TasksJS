@@ -238,13 +238,6 @@ Tasks.DateCalculator.prototype.recalculateDates = function(earliestDate) {
 	for (var i in list) {
 		list[i].recalculateStartDate(earliestDate);
 	}
-	
-	// At this point, we have a problem.  The start of each phase does not
-	// necessarily match the start of the earliest task, and the end of the
-	// phase does not necessarily match the end of the latest task.  The
-	// duration is also wrong.
-	
-	// Additionally, any tasks dependent on the phase will have the wrong dates.
 }
 
 
@@ -307,9 +300,8 @@ Tasks.Task.prototype.getName = function() {
 
 /**
  * Gets the order number of the task.  The order number is used to display tasks
- * in the correct order.  Tasks should not have the same order number their
- * siblings (ie. other tasks that have a ParentChildDependency on the same task
- * as each other).
+ * in the correct order.  Tasks should not have the same order number as one of
+ * their siblings.
  * @return The order number of the task.
  */
 Tasks.Task.prototype.getOrderNumber = function() {
@@ -560,7 +552,7 @@ Tasks.StartToFinishDependency.prototype.getDependentOn = function() {
 
 
 // Create simple task set
-var task1 = new Tasks.Task("Task 1", 3600000, 1);
+var task1 = new Tasks.Task("Task 1", 0, 1);
 var task2 = new Tasks.Task("Task 2", 3600000, 2);
 
 var task1_1 = new Tasks.Task("Task 1.1", 3600000, 1);
