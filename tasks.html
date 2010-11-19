@@ -295,6 +295,47 @@ Tasks.Task.prototype.addDependency = function(dependency) {
 }
 
 /**
+ * Gets all tasks on which this task is dependent, including all tasks that its
+ * ancestors are dependent on.  This gives a complete list of all tasks that
+ * directly affect the dates of this task.
+ * Any phases that are encountered as dependencies are replaced with their
+ * children (and if any of those is a phase, it is replaced with its children,
+ * etc).
+ * @return An array of all dependencies.
+ */
+Tasks.Task.prototype.getAllTaskDependencies = function() {
+	var list = new Array();
+
+	// Add all dependencies of this task and its ancestors
+	var currentTask = this;
+	while (currentTask != null) {
+		for (var i in currentTask.getDependencies()) {
+			list.push(currentTask.getDependencies()[i].getDependentOn());
+		}
+		currentTask = currentTask.getParent();
+	}
+	
+	// Iterate over the list and make sure it contains no chilren
+	for (var i = 0; i < list.length; ++i) {
+		if (list[i].hasChildren()) {
+		
+			var phase = list[i];
+		
+			// Remove the phase
+			list.splice(i, 1);
+			i--;
+			
+			// Add the phase's children to the list
+			for (var j in phase.getChildren()) {
+				list.push(phase.getChildren()[j]);
+			}
+		}
+	}
+	
+	return list;
+}
+
+/**
  * Gets the name of the task.
  * @return The name of the task.
  */
@@ -586,6 +627,8 @@ var calc = new Tasks.DateCalculator(taskList);
 calc.recalculateDates(new Date());
 
 alertTaskArray(taskList);
+
+taskList[1].getAllTaskDependencies();
 
 
 function alertTaskArray(tasks) {
