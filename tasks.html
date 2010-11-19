@@ -132,36 +132,8 @@ Tasks.DateCalculator.prototype.getFlatList = function() {
 			// Get a list of all dependencies that this task has.  This list
 			// will include its own dependencies and the dependencies of its
 			// ancestors, as all of these affect the task
-			var dependencies = new Array();
-			var currentTask = task;
-			
-			while (currentTask != null) {
-				for (var i in task.getDependencies()) {
+			var dependencies = task.getAllTaskDependencies();
 
-					var dependency = task.getDependencies()[i];
-					
-					// If the task is dependent on a phase, we need to make sure
-					// that we replace the phase with dependencies on all of the
-					// individual tasks.
-					// Note that we assume that the children of the phase are
-					// not themselves phases.  This means that we only support
-					// two levels (phases and tasks) not n levels (which would
-					// be possible, but requires more complex logic here).
-					if (dependency.getDependentOn().hasChildren()) {
-						var dependentOn = dependency.getDependentOn();
-						
-						for (var j in dependentOn.getChildren()) {
-							dependencies.push(dependentOn.getChildren()[j]);
-						}
-					} else {
-					
-						// Dependent on a task, so just add that
-						dependencies.push(dependency.getDependentOn());
-					}
-				}
-				currentTask = currentTask.getParent();
-			}
-			
 			list.push({ task: task, dependencies: dependencies });
 		}
 	}
