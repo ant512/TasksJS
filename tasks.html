@@ -28,7 +28,7 @@ var task2 = new Tasks.Task("Task 2", 3600000, week, 2);
 var task3 = new Tasks.Task("Task 3", 3600000, week, 3);
 var task4 = new Tasks.Task("Task 4", 3600000, week, 4);
 
-var task1_1 = new Tasks.Task("Task 1.1", 3600000, week, 1);
+var task1_1 = new Tasks.Task("Task 1.1", 36000000, week, 1);
 var task1_2 = new Tasks.Task("Task 1.2", 3600000, week, 2);
 
 task2.addDependency(new Tasks.FinishToStartDependency(task1));
@@ -51,14 +51,13 @@ task1.addChild(task1_2);
 
 
 
-
 // Calculate task set dates
 var calc = new Tasks.DateCalculator(taskList);
 calc.recalculateDates(new Date());
 
 alertTaskArray(taskList);
 
-taskList[1].getAllTaskDependencies();
+//taskList[1].getAllTaskDependencies();
 
 
 function alertTaskArray(tasks) {

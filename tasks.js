@@ -294,7 +294,7 @@ Tasks.Task.prototype.getAllTaskDependencies = function() {
 			var dependentOn = currentTask.getDependencies()[i].getDependentOn();
 			
 			if (dependentOn != null) {
-				list.push();
+				list.push(dependentOn);
 			}
 		}
 		currentTask = currentTask.getParent();
@@ -437,8 +437,17 @@ Tasks.Task.prototype.recalculateDates = function(earliestDate) {
 	// Ensure that the start date falls within a working shift
 	this.startDate = this.workingWeek.getNextShift(latestDate).getStartTime();
 	
+	// Work out end date using working week.  We subtract 1 from the duration
+	// to ensure that, should the end date be at the end of a working shift,
+	// we retrieve the correct shift from the working week later
+	var timeSpan = new WorkingWeek.TimeSpan(0, 0, 0, 0, this.duration - 1);
+	this.endDate = this.workingWeek.dateAdd(this.startDate, timeSpan);
+	
 	// Ensure that the end date falls within a working shift
-	this.endDate = this.workingWeek.getNextShift(new Date(this.startDate.getTime() + this.duration)).getStartTime();
+	this.endDate = this.workingWeek.getNextShift(this.endDate).getStartTime();
+	
+	// Add the millisecond back on to the date that we subtracted earlier
+	this.endDate = new Date(this.endDate.getTime() + 1);
 }
 
 
