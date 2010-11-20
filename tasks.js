@@ -59,6 +59,16 @@ var Tasks = {
 	StartToFinishDependency: function(dependentOn) {
 		this.owner = null;
 		this.dependentOn = dependentOn;
+	},
+	
+	/**
+	 * Owning task will start on the specified date.
+	 * @param startDate Date on which the date will start.
+	 */
+	FixedStartDependency: function(startDate) {
+		this.owner = null;
+		this.dependentOn = null;
+		this.startDate = startDate;
 	}
 }
 
@@ -278,7 +288,11 @@ Tasks.Task.prototype.getAllTaskDependencies = function() {
 	var currentTask = this;
 	while (currentTask != null) {
 		for (var i in currentTask.getDependencies()) {
-			list.push(currentTask.getDependencies()[i].getDependentOn());
+			var dependentOn = currentTask.getDependencies()[i].getDependentOn();
+			
+			if (dependentOn != null) {
+				list.push();
+			}
 		}
 		currentTask = currentTask.getParent();
 	}
@@ -403,6 +417,14 @@ Tasks.Task.prototype.recalculateStartDate = function(earliestDate) {
 	var latestDate = earliestDate;
 	
 	for (var i in this.dependencies) {
+		
+		// Check if we have a fixed date; if so, just use that.  Type checking
+		// is ugly, but it works
+		if (this.dependencies[i] instanceof Tasks.FixedStartDependency) {
+			this.startDate = this.dependencies[i].getStartDate();
+			return;
+		}
+		
 		var dependencyDate = this.dependencies[i].getStartDate();
 		
 		if (dependencyDate > latestDate) {
@@ -554,5 +576,41 @@ Tasks.StartToFinishDependency.prototype.getOwner = function() {
  * @return The task that the owner is dependent on.
  */
 Tasks.StartToFinishDependency.prototype.getDependentOn = function() {
+	return this.dependentOn;
+}
+
+
+/** FixedStartDependency Methods **/
+
+/**
+ * Get the start date of the task.
+ * @return The start date of the task.
+ */
+Tasks.FixedStartDependency.prototype.getStartDate = function() {
+	return this.startDate;
+}
+
+/**
+ * Set the owner of the dependency.  This is done automatically by the Task
+ * object's addDependency() method and shouldn't be used elsewhere.
+ * @param owner The owner of the dependency.
+ */
+Tasks.FixedStartDependency.prototype.setOwner = function(owner) {
+	this.owner = owner;
+}
+
+/**
+ * Get the task that owns the dependency.
+ * @return The task that owns the dependency.
+ */
+Tasks.FixedStartDependency.prototype.getOwner = function() {
+	return this.owner;
+}
+
+/**
+ * Get the task that the owner is dependent on.
+ * @return The task that the owner is dependent on.
+ */
+Tasks.FixedStartDependency.prototype.getDependentOn = function() {
 	return this.dependentOn;
 }

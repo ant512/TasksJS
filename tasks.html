@@ -7,6 +7,7 @@
 var task1 = new Tasks.Task("Task 1", 0, 1);
 var task2 = new Tasks.Task("Task 2", 3600000, 2);
 var task3 = new Tasks.Task("Task 3", 3600000, 3);
+var task4 = new Tasks.Task("Task 4", 3600000, 4);
 
 var task1_1 = new Tasks.Task("Task 1.1", 3600000, 1);
 var task1_2 = new Tasks.Task("Task 1.2", 3600000, 2);
@@ -17,11 +18,14 @@ task1_2.addDependency(new Tasks.FinishToStartDependency(task1_1));
 
 task3.addDependency(new Tasks.FinishToFinishDependency(task2));
 
+task4.addDependency(new Tasks.FixedStartDependency(new Date(2011, 0, 1, 9, 30, 0, 0)));
+
 var taskList = new Array();
 
 taskList.push(task1);
 taskList.push(task2);
 taskList.push(task3);
+taskList.push(task4);
 
 task1.addChild(task1_1);
 task1.addChild(task1_2);
