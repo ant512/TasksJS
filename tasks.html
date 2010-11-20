@@ -1,16 +1,35 @@
 <html>
 <head>
+<script src="workingweek.js"></script>
 <script src="tasks.js"></script>
 <script>
 
-// Create simple task set
-var task1 = new Tasks.Task("Task 1", 0, 1);
-var task2 = new Tasks.Task("Task 2", 3600000, 2);
-var task3 = new Tasks.Task("Task 3", 3600000, 3);
-var task4 = new Tasks.Task("Task 4", 3600000, 4);
+// Define a working week
+var week = new WorkingWeek.Week();
 
-var task1_1 = new Tasks.Task("Task 1.1", 3600000, 1);
-var task1_2 = new Tasks.Task("Task 1.2", 3600000, 2);
+week.addShift(WorkingWeek.DayOfWeek.Monday, 9, 30, 0, 0, new WorkingWeek.TimeSpan(0, 3, 0, 0, 0));
+week.addShift(WorkingWeek.DayOfWeek.Monday, 13, 30, 0, 0, new WorkingWeek.TimeSpan(0, 4, 0, 0, 0));
+
+week.addShift(WorkingWeek.DayOfWeek.Tuesday, 9, 30, 0, 0, new WorkingWeek.TimeSpan(0, 3, 0, 0, 0));
+week.addShift(WorkingWeek.DayOfWeek.Tuesday, 13, 30, 0, 0, new WorkingWeek.TimeSpan(0, 4, 0, 0, 0));
+
+week.addShift(WorkingWeek.DayOfWeek.Wednesday, 9, 30, 0, 0, new WorkingWeek.TimeSpan(0, 3, 0, 0, 0));
+week.addShift(WorkingWeek.DayOfWeek.Wednesday, 13, 30, 0, 0, new WorkingWeek.TimeSpan(0, 4, 0, 0, 0));
+
+week.addShift(WorkingWeek.DayOfWeek.Thursday, 9, 30, 0, 0, new WorkingWeek.TimeSpan(0, 3, 0, 0, 0));
+week.addShift(WorkingWeek.DayOfWeek.Thursday, 13, 30, 0, 0, new WorkingWeek.TimeSpan(0, 4, 0, 0, 0));
+
+week.addShift(WorkingWeek.DayOfWeek.Friday, 9, 30, 0, 0, new WorkingWeek.TimeSpan(0, 3, 0, 0, 0));
+week.addShift(WorkingWeek.DayOfWeek.Friday, 13, 30, 0, 0, new WorkingWeek.TimeSpan(0, 4, 0, 0, 0));
+
+// Create simple task set
+var task1 = new Tasks.Task("Task 1", 0, week, 1);
+var task2 = new Tasks.Task("Task 2", 3600000, week, 2);
+var task3 = new Tasks.Task("Task 3", 3600000, week, 3);
+var task4 = new Tasks.Task("Task 4", 3600000, week, 4);
+
+var task1_1 = new Tasks.Task("Task 1.1", 3600000, week, 1);
+var task1_2 = new Tasks.Task("Task 1.2", 3600000, week, 2);
 
 task2.addDependency(new Tasks.FinishToStartDependency(task1));
 

@@ -4,16 +4,19 @@ var Tasks = {
 	 * Task object.
 	 * @param name Name of the task.
 	 * @param duration The length of the task in milliseconds.
+	 * @param workingWeek The working week that the task should use.
 	 * @param orderNumber The order number of the task when it is displayed.
 	 */
-	Task: function(name, duration, orderNumber) {
+	Task: function(name, duration, workingWeek, orderNumber) {
 		this.name = name;
 		this.startDate = new Date();
+		this.endDate = new Date();
 		this.dependencies = new Array();
 		this.duration = duration;
 		this.orderNumber = orderNumber;
 		this.parent = null;
 		this.children = new Array();
+		this.workingWeek = workingWeek;
 	},
 	
 	/**
@@ -218,7 +221,7 @@ Tasks.DateCalculator.prototype.recalculateDates = function(earliestDate) {
 	
 	// Recalculate the start date for all tasks in the list
 	for (var i in list) {
-		list[i].recalculateStartDate(earliestDate);
+		list[i].recalculateDates(earliestDate);
 	}
 }
 
@@ -374,7 +377,7 @@ Tasks.Task.prototype.getStartDate = function() {
 Tasks.Task.prototype.getEndDate = function() {
 
 	// If we have no children, we return the end date of the task
-	if (!this.hasChildren()) return new Date(this.startDate.getTime() + this.duration);
+	if (!this.hasChildren()) return this.endDate;
 	
 	// Otherwise, we look at our children to find the latest end date and
 	// return that
@@ -413,26 +416,29 @@ Tasks.Task.prototype.getDuration = function() {
  * @param earliestDate The earliest date that the task can use as its start
  * date.
  */
-Tasks.Task.prototype.recalculateStartDate = function(earliestDate) {
+Tasks.Task.prototype.recalculateDates = function(earliestDate) {
 	var latestDate = earliestDate;
 	
-	for (var i in this.dependencies) {
-		
-		// Check if we have a fixed date; if so, just use that.  Type checking
-		// is ugly, but it works
-		if (this.dependencies[i] instanceof Tasks.FixedStartDependency) {
-			this.startDate = this.dependencies[i].getStartDate();
-			return;
-		}
-		
+	for (var i in this.dependencies) {		
 		var dependencyDate = this.dependencies[i].getStartDate();
 		
 		if (dependencyDate > latestDate) {
 			latestDate = dependencyDate;
 		}
+		
+		// Check if we have a fixed date; if so, just use that.  Type checking
+		// is ugly, but it works
+		if (this.dependencies[i] instanceof Tasks.FixedStartDependency) {
+			latestDate = this.dependencies[i].getStartDate();
+			break;
+		}
 	}
 	
-	this.startDate = latestDate;
+	// Ensure that the start date falls within a working shift
+	this.startDate = this.workingWeek.getNextShift(latestDate).getStartTime();
+	
+	// Ensure that the end date falls within a working shift
+	this.endDate = this.workingWeek.getNextShift(new Date(this.startDate.getTime() + this.duration)).getStartTime();
 }
 
 
