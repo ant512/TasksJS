@@ -4,10 +4,9 @@ var Tasks = {
 	 * Task object.
 	 * @param name Name of the task.
 	 * @param duration The length of the task in milliseconds.
-	 * @param workingWeek The working week that the task should use.
 	 * @param orderNumber The order number of the task when it is displayed.
 	 */
-	Task: function(name, duration, workingWeek, orderNumber) {
+	Task: function(name, duration, orderNumber) {
 		this.name = name;
 		this.startDate = new Date();
 		this.endDate = new Date();
@@ -16,7 +15,6 @@ var Tasks = {
 		this.orderNumber = orderNumber;
 		this.parent = null;
 		this.children = new Array();
-		this.workingWeek = workingWeek;
 	},
 	
 	/**
@@ -211,8 +209,10 @@ Tasks.DateCalculator.prototype.getSortedList = function() {
  * calculated before T is reached.  Recalculating dates becomes a simple matter
  * of asking the task's dependencies for their start dates, and choosing the
  * latest date.
+ * @param earliestDate The earliest date for any task.
+ * @param week The working week to base date calculations on.
  */
-Tasks.DateCalculator.prototype.recalculateDates = function(earliestDate) {
+Tasks.DateCalculator.prototype.recalculateDates = function(earliestDate, week) {
 	
 	// Ensure that the list is sorted topologically before we begin.  This means
 	// that all tasks will have the correct start and end dates before any
@@ -221,7 +221,7 @@ Tasks.DateCalculator.prototype.recalculateDates = function(earliestDate) {
 	
 	// Recalculate the start date for all tasks in the list
 	for (var i in list) {
-		list[i].recalculateDates(earliestDate);
+		list[i].recalculateDates(earliestDate, week);
 	}
 }
 
@@ -415,8 +415,9 @@ Tasks.Task.prototype.getDuration = function() {
  * passed as earliestDate.
  * @param earliestDate The earliest date that the task can use as its start
  * date.
+ * @param week The working week to base calculations on.
  */
-Tasks.Task.prototype.recalculateDates = function(earliestDate) {
+Tasks.Task.prototype.recalculateDates = function(earliestDate, week) {
 	var latestDate = earliestDate;
 	
 	for (var i in this.dependencies) {		
@@ -435,16 +436,16 @@ Tasks.Task.prototype.recalculateDates = function(earliestDate) {
 	}
 	
 	// Ensure that the start date falls within a working shift
-	this.startDate = this.workingWeek.getNextShift(latestDate).getStartTime();
+	this.startDate = week.getNextShift(latestDate).getStartTime();
 	
 	// Work out end date using working week.  We subtract 1 from the duration
 	// to ensure that, should the end date be at the end of a working shift,
 	// we retrieve the correct shift from the working week later
 	var timeSpan = new WorkingWeek.TimeSpan(0, 0, 0, 0, this.duration - 1);
-	this.endDate = this.workingWeek.dateAdd(this.startDate, timeSpan);
+	this.endDate = week.dateAdd(this.startDate, timeSpan);
 	
 	// Ensure that the end date falls within a working shift
-	this.endDate = this.workingWeek.getNextShift(this.endDate).getStartTime();
+	this.endDate = week.getNextShift(this.endDate).getStartTime();
 	
 	// Add the millisecond back on to the date that we subtracted earlier
 	this.endDate = new Date(this.endDate.getTime() + 1);

@@ -3,15 +3,17 @@ var Projects = {
 	/**
 	 * Project object.
 	 * @param name Name of the project.
-	 * @startDate Start date of the project.
-	 * @creator The creator of the project.
+	 * @param startDate Start date of the project.
+	 * @param week The project's working week.
+	 * @param creator The creator of the project.
 	 */
-	Project: function(name, startDate, creator) {
+	Project: function(name, startDate, week, creator) {
 		this.tasks = new Array();
 		this.name = name;
 		this.creator = creator;
 		this.created = new Date();
 		this.startDate = startDate;
+		this.week = week;
 	}
 }
 
@@ -36,5 +38,5 @@ Projects.Project.prototype.addTask = function(task) {
  */
 Projects.Project.prototype.recalculateDates = function() {
 	var calc = new Tasks.DateCalculator(this.tasks);
-	calc.recalculateDates(this.startDate);
+	calc.recalculateDates(this.startDate, this.week);
 }
