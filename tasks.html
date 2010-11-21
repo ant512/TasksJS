@@ -2,6 +2,7 @@
 <head>
 <script src="workingweek.js"></script>
 <script src="tasks.js"></script>
+<script src="project.js"></script>
 <script>
 
 // Define a working week
@@ -22,6 +23,10 @@ week.addShift(WorkingWeek.DayOfWeek.Thursday, 13, 30, 0, 0, new WorkingWeek.Time
 week.addShift(WorkingWeek.DayOfWeek.Friday, 9, 30, 0, 0, new WorkingWeek.TimeSpan(0, 3, 0, 0, 0));
 week.addShift(WorkingWeek.DayOfWeek.Friday, 13, 30, 0, 0, new WorkingWeek.TimeSpan(0, 4, 0, 0, 0));
 
+
+// Create a new project
+var project = new Projects.Project("Test Project", new Date(), "ant512");
+
 // Create simple task set
 var task1 = new Tasks.Task("Task 1", 0, week, 1);
 var task2 = new Tasks.Task("Task 2", 3600000, week, 2);
@@ -31,33 +36,24 @@ var task4 = new Tasks.Task("Task 4", 3600000, week, 4);
 var task1_1 = new Tasks.Task("Task 1.1", 36000000, week, 1);
 var task1_2 = new Tasks.Task("Task 1.2", 3600000, week, 2);
 
-task2.addDependency(new Tasks.FinishToStartDependency(task1));
-
-task1_2.addDependency(new Tasks.FinishToStartDependency(task1_1));
-
-task3.addDependency(new Tasks.FinishToFinishDependency(task2));
-
-task4.addDependency(new Tasks.FixedStartDependency(new Date(2011, 0, 1, 9, 30, 0, 0)));
-
-var taskList = new Array();
-
-taskList.push(task1);
-taskList.push(task2);
-taskList.push(task3);
-taskList.push(task4);
-
 task1.addChild(task1_1);
 task1.addChild(task1_2);
 
+task2.addDependency(new Tasks.FinishToStartDependency(task1));
+task1_2.addDependency(new Tasks.FinishToStartDependency(task1_1));
+task3.addDependency(new Tasks.FinishToFinishDependency(task2));
+task4.addDependency(new Tasks.FixedStartDependency(new Date(2011, 0, 1, 9, 30, 0, 0)));
+
+project.addTask(task1);
+project.addTask(task2);
+project.addTask(task3);
+project.addTask(task4);
+
+project.recalculateDates();
 
 
-// Calculate task set dates
-var calc = new Tasks.DateCalculator(taskList);
-calc.recalculateDates(new Date());
 
-alertTaskArray(taskList);
-
-//taskList[1].getAllTaskDependencies();
+alertTaskArray(project.getTasks());
 
 
 function alertTaskArray(tasks) {
