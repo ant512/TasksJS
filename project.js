@@ -37,6 +37,6 @@ Projects.Project.prototype.addTask = function(task) {
  * Recalculates the dates of all tasks in the project.
  */
 Projects.Project.prototype.recalculateDates = function() {
-	var calc = new Tasks.DateCalculator(this.tasks);
+	var calc = new Tasks.DateCalculator();
 	calc.recalculateDates(this.tasks, this.startDate, this.week);
 }
