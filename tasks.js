@@ -19,12 +19,8 @@ var Tasks = {
 	
 	/**
 	 * Used to calculate the start dates of all tasks.
-	 * @param taskList the array/tree hybrid data structure that contains the
-	 * tasks to recalculate.
 	 */
-	DateCalculator: function(taskList) {
-		this.taskList = taskList;
-	},
+	DateCalculator: function() { },
 	
 	/**
 	 * Owning task will start when the task it is dependent on finishes.
@@ -111,14 +107,16 @@ var Tasks = {
  * another task, then the start of 2 would also be dependent on the start of 3.
  * Cyclic dependency = impossible to resolve without some nasty, hacky
  * workarounds.
+ * @param taskList the array/tree hybrid data structure that contains the
+ * tasks to recalculate.
  * @return An array of task/dependencies.
  */
-Tasks.DateCalculator.prototype.getFlatList = function() {
+Tasks.DateCalculator.prototype.getFlatList = function(tasks) {
 	var list = new Array();
 	var stack = new Array();
 	
-	for (var i in this.taskList) {
-		stack.push(this.taskList[i]);
+	for (var i in tasks) {
+		stack.push(tasks[i]);
 	}
 	
 	while (stack.length > 0) {
@@ -155,13 +153,15 @@ Tasks.DateCalculator.prototype.getFlatList = function() {
  * on any other.
  * Unlike the getFlatList() function, this returns an array of plain task
  * objects.
+ * @param taskList the array/tree hybrid data structure that contains the
+ * tasks to recalculate.
  * @return An array of sorted task objects.
  */
-Tasks.DateCalculator.prototype.getSortedList = function() {
+Tasks.DateCalculator.prototype.getSortedList = function(tasks) {
 	var rootTasks = new Array();
 	var removedDependencyCounts = new Array();
 	var sortedTasks = new Array();
-	var unsortedTasks = this.getFlatList();
+	var unsortedTasks = this.getFlatList(tasks);
 	
 	// Create list of tasks that are not dependent on any other
 	for (var i in unsortedTasks) {
@@ -209,15 +209,17 @@ Tasks.DateCalculator.prototype.getSortedList = function() {
  * calculated before T is reached.  Recalculating dates becomes a simple matter
  * of asking the task's dependencies for their start dates, and choosing the
  * latest date.
+ * @param tasks the array/tree hybrid data structure that contains the
+ * tasks to recalculate.
  * @param earliestDate The earliest date for any task.
  * @param week The working week to base date calculations on.
  */
-Tasks.DateCalculator.prototype.recalculateDates = function(earliestDate, week) {
+Tasks.DateCalculator.prototype.recalculateDates = function(tasks, earliestDate, week) {
 	
 	// Ensure that the list is sorted topologically before we begin.  This means
 	// that all tasks will have the correct start and end dates before any
 	// dependent tasks have their dates calculated
-	var list = this.getSortedList();
+	var list = this.getSortedList(tasks);
 	
 	// Recalculate the start date for all tasks in the list
 	for (var i in list) {

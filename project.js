@@ -38,5 +38,5 @@ Projects.Project.prototype.addTask = function(task) {
  */
 Projects.Project.prototype.recalculateDates = function() {
 	var calc = new Tasks.DateCalculator(this.tasks);
-	calc.recalculateDates(this.startDate, this.week);
+	calc.recalculateDates(this.tasks, this.startDate, this.week);
 }
