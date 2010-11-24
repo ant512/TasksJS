@@ -423,7 +423,7 @@ Tasks.Task.prototype.recalculateDates = function(earliestDate, week) {
 	var latestDate = earliestDate;
 	
 	for (var i in this.dependencies) {		
-		var dependencyDate = this.dependencies[i].getStartDate();
+		var dependencyDate = this.dependencies[i].getStartDate(week);
 		
 		if (dependencyDate > latestDate) {
 			latestDate = dependencyDate;
@@ -432,7 +432,7 @@ Tasks.Task.prototype.recalculateDates = function(earliestDate, week) {
 		// Check if we have a fixed date; if so, just use that.  Type checking
 		// is ugly, but it works
 		if (this.dependencies[i] instanceof Tasks.FixedStartDependency) {
-			latestDate = this.dependencies[i].getStartDate();
+			latestDate = this.dependencies[i].getStartDate(week);
 			break;
 		}
 	}
@@ -458,9 +458,10 @@ Tasks.Task.prototype.recalculateDates = function(earliestDate, week) {
 
 /**
  * Get the start date of the task.
+ * @param week The working week to use for date calculations.
  * @return The start date of the task.
  */
-Tasks.FinishToStartDependency.prototype.getStartDate = function() {
+Tasks.FinishToStartDependency.prototype.getStartDate = function(week) {
 	return this.dependentOn.getEndDate();
 }
 
@@ -494,10 +495,11 @@ Tasks.FinishToStartDependency.prototype.getDependentOn = function() {
 
 /**
  * Get the start date of the task.
+ * @param week The working week to use for date calculations.
  * @return The start date of the task.
  */
-Tasks.FinishToFinishDependency.prototype.getStartDate = function() {
-	return new Date(this.dependentOn.getEndDate().getTime() - this.owner.getDuration());
+Tasks.FinishToFinishDependency.prototype.getStartDate = function(week) {
+	return week.dateAdd(this.dependentOn.getEndDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration()));
 }
 
 /**
@@ -530,9 +532,10 @@ Tasks.FinishToFinishDependency.prototype.getDependentOn = function() {
 
 /**
  * Get the start date of the task.
+ * @param week The working week to use for date calculations.
  * @return The start date of the task.
  */
-Tasks.StartToStartDependency.prototype.getStartDate = function() {
+Tasks.StartToStartDependency.prototype.getStartDate = function(week) {
 	return new Date(this.dependentOn.getStartDate());
 }
 
@@ -566,10 +569,11 @@ Tasks.StartToStartDependency.prototype.getDependentOn = function() {
 
 /**
  * Get the start date of the task.
+ * @param week The working week to use for date calculations.
  * @return The start date of the task.
  */
-Tasks.StartToFinishDependency.prototype.getStartDate = function() {
-	return new Date(this.dependentOn.getStartDate().getTime() - this.owner.getDuration());
+Tasks.StartToFinishDependency.prototype.getStartDate = function(week) {
+	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration));
 }
 
 /**
@@ -602,9 +606,10 @@ Tasks.StartToFinishDependency.prototype.getDependentOn = function() {
 
 /**
  * Get the start date of the task.
+ * @param week The working week to use for date calculations.
  * @return The start date of the task.
  */
-Tasks.FixedStartDependency.prototype.getStartDate = function() {
+Tasks.FixedStartDependency.prototype.getStartDate = function(week) {
 	return this.startDate;
 }
 
