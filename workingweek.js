@@ -351,7 +351,7 @@ WorkingWeek.Day.prototype.removeShift = function(shift) {
 /**
  * Get the next shift after the supplied date.  If the next appropriate shift
  * contains the supplied date, that shift is returned.
- * @param date Date of the shift to find.
+ * @param date Start date of the shift to find.
  * @return The appropriate shift, or null if no shift is found.
  */
 WorkingWeek.Day.prototype.getNextShift = function(date) {
@@ -386,7 +386,7 @@ WorkingWeek.Day.prototype.getNextShift = function(date) {
 /**
  * Get the shift prior to the supplied date.  If the next appropriate shift
  * contains the supplied date, that shift is returned.
- * @param date Date of the shift to find.
+ * @param date End date of the shift to find.
  * @return The appropriate shift, or null if no shift is found.
  */
 WorkingWeek.Day.prototype.getPreviousShift = function(date) {
@@ -412,7 +412,7 @@ WorkingWeek.Day.prototype.getPreviousShift = function(date) {
 			
 			var duration = new WorkingWeek.TimeSpan(0, 0, 0, 0, milliseconds);
 			
-			return new WorkingWeek.Shift(searchTime, duration);
+			return new WorkingWeek.Shift(this.shifts[i].getStartTime(), duration);
 		}
 	}
 	

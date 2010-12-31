@@ -60,15 +60,24 @@ var Tasks = {
 	
 	/**
 	 * Owning task will start on the specified date.
-	 * @param startDate Date on which the date will start.
+	 * @param startDate Date on which the task will start.
 	 */
 	FixedStartDependency: function(startDate) {
 		this.owner = null;
 		this.dependentOn = null;
 		this.startDate = startDate;
+	},
+	
+	/**
+	 * Owning task will end on the specified date.
+	 * @param endDate Date on which the task will end.
+	 */
+	FixedFinishDependency: function(endDate) {
+		this.owner = null;
+		this.dependentOn = null;
+		this.endDate = endDate;
 	}
 }
-
 
 /** DateCalculator Methods **/
 
@@ -573,7 +582,7 @@ Tasks.StartToStartDependency.prototype.getDependentOn = function() {
  * @return The start date of the task.
  */
 Tasks.StartToFinishDependency.prototype.getStartDate = function(week) {
-	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration));
+	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration()));
 }
 
 /**
@@ -635,5 +644,42 @@ Tasks.FixedStartDependency.prototype.getOwner = function() {
  * @return The task that the owner is dependent on.
  */
 Tasks.FixedStartDependency.prototype.getDependentOn = function() {
+	return this.dependentOn;
+}
+
+
+/** FixedFinishDependency Methods **/
+
+/**
+ * Get the start date of the task.
+ * @param week The working week to use for date calculations.
+ * @return The start date of the task.
+ */
+Tasks.FixedFinishDependency.prototype.getStartDate = function(week) {
+	return week.dateAdd(this.endDate, new WorkingWeek.TimeSpan(0, 0, 0, 0, -this.owner.getDuration()));
+}
+
+/**
+ * Set the owner of the dependency.  This is done automatically by the Task
+ * object's addDependency() method and shouldn't be used elsewhere.
+ * @param owner The owner of the dependency.
+ */
+Tasks.FixedFinishDependency.prototype.setOwner = function(owner) {
+	this.owner = owner;
+}
+
+/**
+ * Get the task that owns the dependency.
+ * @return The task that owns the dependency.
+ */
+Tasks.FixedFinishDependency.prototype.getOwner = function() {
+	return this.owner;
+}
+
+/**
+ * Get the task that the owner is dependent on.
+ * @return The task that the owner is dependent on.
+ */
+Tasks.FixedFinishDependency.prototype.getDependentOn = function() {
 	return this.dependentOn;
 }

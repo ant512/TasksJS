@@ -36,6 +36,9 @@ var task4 = new Tasks.Task("Task 4", 3600000, 4);
 var task1_1 = new Tasks.Task("Task 1.1", 36000000, 1);
 var task1_2 = new Tasks.Task("Task 1.2", 3600000, 2);
 
+var task5 = new Tasks.Task("Task 5", 3600000, 5);
+task5.addDependency(new Tasks.FixedFinishDependency(new Date(2011, 0, 3, 10, 30, 0, 0)));
+
 task1.addChild(task1_1);
 task1.addChild(task1_2);
 
@@ -48,6 +51,7 @@ project.addTask(task1);
 project.addTask(task2);
 project.addTask(task3);
 project.addTask(task4);
+project.addTask(task5);
 
 project.recalculateDates();
 
