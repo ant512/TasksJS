@@ -32,14 +32,18 @@ var Tasks = {
 		High: 2
 	},
 	
+	Dependency: function(dependentOn, priority) {
+		this.priority = priority;
+		this.owner = null;
+		this.dependentOn = dependentOn;
+	},
+	
 	/**
 	 * Owning task will start when the task it is dependent on finishes.
 	 * @param dependentOn Task that this task is dependent on.
 	 */
 	FinishToStartDependency: function(dependentOn) {
-		this.owner = null;
-		this.dependentOn = dependentOn;
-		this.priority = Tasks.DependencyPriority.Low;
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low);
 	},
 	
 	/**
@@ -47,9 +51,7 @@ var Tasks = {
 	 * @param dependentOn Task that this task is dependent on.
 	 */
 	FinishToFinishDependency: function(dependentOn) {
-		this.owner = null;
-		this.dependentOn = dependentOn;
-		this.priority = Tasks.DependencyPriority.Low;
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low);
 	},
 	
 	/**
@@ -57,9 +59,7 @@ var Tasks = {
 	 * @param dependentOn Task that this task is dependent on.
 	 */
 	StartToStartDependency: function(dependentOn) {
-		this.owner = null;
-		this.dependentOn = dependentOn;
-		this.priority = Tasks.DependencyPriority.Low;
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low);
 	},
 	
 	/**
@@ -67,9 +67,7 @@ var Tasks = {
 	 * @param dependentOn Task that this task is dependent on.
 	 */
 	StartToFinishDependency: function(dependentOn) {
-		this.owner = null;
-		this.dependentOn = dependentOn;
-		this.priority = Tasks.DependencyPriority.Low;
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low);
 	},
 	
 	/**
@@ -77,10 +75,8 @@ var Tasks = {
 	 * @param startDate Date on which the task will start.
 	 */
 	FixedStartDependency: function(startDate) {
-		this.owner = null;
-		this.dependentOn = null;
+		Tasks.Dependency.prototype.constructor.call(this, null, Tasks.DependencyPriority.High);
 		this.startDate = startDate;
-		this.priority = Tasks.DependencyPriority.High;
 	},
 	
 	/**
@@ -88,10 +84,8 @@ var Tasks = {
 	 * @param endDate Date on which the task will end.
 	 */
 	FixedFinishDependency: function(endDate) {
-		this.owner = null;
-		this.dependentOn = null;
+		Tasks.Dependency.prototype.constructor.call(this, null, Tasks.DependencyPriority.High);
 		this.endDate = endDate;
-		this.priority = Tasks.DependencyPriority.High;
 	}
 }
 
@@ -488,7 +482,45 @@ Tasks.Task.prototype.recalculateDates = function(earliestDate, week) {
 }
 
 
+/** Dependency Methods **/
+
+/**
+ * Set the owner of the dependency.  This is done automatically by the Task
+ * object's addDependency() method and shouldn't be used elsewhere.
+ * @param owner The owner of the dependency.
+ */
+Tasks.Dependency.prototype.setOwner = function(owner) {
+	this.owner = owner;
+}
+
+/**
+ * Get the task that owns the dependency.
+ * @return The task that owns the dependency.
+ */
+Tasks.Dependency.prototype.getOwner = function() {
+	return this.owner;
+}
+
+/**
+ * Get the task that the owner is dependent on.
+ * @return The task that the owner is dependent on.
+ */
+Tasks.Dependency.prototype.getDependentOn = function() {
+	return this.dependentOn;
+}
+
+/**
+ * Get the priority of the dependency.
+ * @return The priority of the dependency.
+ */
+Tasks.Dependency.prototype.getPriority = function() {
+	return this.priority;
+}
+
+
 /** FinishToStartDependency Methods **/
+Tasks.FinishToStartDependency.prototype = new Tasks.Dependency;
+Tasks.FinishToStartDependency.prototype.constructor = Tasks.FinishToStartDependency;
 
 /**
  * Get the start date of the task.
@@ -499,41 +531,10 @@ Tasks.FinishToStartDependency.prototype.getStartDate = function(week) {
 	return this.dependentOn.getEndDate();
 }
 
-/**
- * Set the owner of the dependency.  This is done automatically by the Task
- * object's addDependency() method and shouldn't be used elsewhere.
- * @param owner The owner of the dependency.
- */
-Tasks.FinishToStartDependency.prototype.setOwner = function(owner) {
-	this.owner = owner;
-}
-
-/**
- * Get the task that owns the dependency.
- * @return The task that owns the dependency.
- */
-Tasks.FinishToStartDependency.prototype.getOwner = function() {
-	return this.owner;
-}
-
-/**
- * Get the task that the owner is dependent on.
- * @return The task that the owner is dependent on.
- */
-Tasks.FinishToStartDependency.prototype.getDependentOn = function() {
-	return this.dependentOn;
-}
-
-/**
- * Get the priority of the dependency.
- * @return The priority of the dependency.
- */
-Tasks.FinishToStartDependency.prototype.getPriority = function() {
-	return this.priority;
-}
-
 
 /** FinishToFinishDependency Methods **/
+Tasks.FinishToFinishDependency.prototype = new Tasks.Dependency;
+Tasks.FinishToFinishDependency.prototype.constructor = Tasks.FinishToFinishDependency;
 
 /**
  * Get the start date of the task.
@@ -541,44 +542,13 @@ Tasks.FinishToStartDependency.prototype.getPriority = function() {
  * @return The start date of the task.
  */
 Tasks.FinishToFinishDependency.prototype.getStartDate = function(week) {
-	return week.dateAdd(this.dependentOn.getEndDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration()));
-}
-
-/**
- * Set the owner of the dependency.  This is done automatically by the Task
- * object's addDependency() method and shouldn't be used elsewhere.
- * @param owner The owner of the dependency.
- */
-Tasks.FinishToFinishDependency.prototype.setOwner = function(owner) {
-	this.owner = owner;
-}
-
-/**
- * Get the task that owns the dependency.
- * @return The task that owns the dependency.
- */
-Tasks.FinishToFinishDependency.prototype.getOwner = function() {
-	return this.owner;
-}
-
-/**
- * Get the task that the owner is dependent on.
- * @return The task that the owner is dependent on.
- */
-Tasks.FinishToFinishDependency.prototype.getDependentOn = function() {
-	return this.dependentOn;
-}
-
-/**
- * Get the priority of the dependency.
- * @return The priority of the dependency.
- */
-Tasks.FinishToFinishDependency.prototype.getPriority = function() {
-	return this.priority;
+	return week.dateAdd(this.dependentOn.getEndDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, -this.owner.getDuration()));
 }
 
 
 /** StartToStartDependency Methods **/
+Tasks.StartToStartDependency.prototype = new Tasks.Dependency;
+Tasks.StartToStartDependency.prototype.constructor = Tasks.StartToStartDependency;
 
 /**
  * Get the start date of the task.
@@ -589,41 +559,10 @@ Tasks.StartToStartDependency.prototype.getStartDate = function(week) {
 	return new Date(this.dependentOn.getStartDate());
 }
 
-/**
- * Set the owner of the dependency.  This is done automatically by the Task
- * object's addDependency() method and shouldn't be used elsewhere.
- * @param owner The owner of the dependency.
- */
-Tasks.StartToStartDependency.prototype.setOwner = function(owner) {
-	this.owner = owner;
-}
-
-/**
- * Get the task that owns the dependency.
- * @return The task that owns the dependency.
- */
-Tasks.StartToStartDependency.prototype.getOwner = function() {
-	return this.owner;
-}
-
-/**
- * Get the task that the owner is dependent on.
- * @return The task that the owner is dependent on.
- */
-Tasks.StartToStartDependency.prototype.getDependentOn = function() {
-	return this.dependentOn;
-}
-
-/**
- * Get the priority of the dependency.
- * @return The priority of the dependency.
- */
-Tasks.StartToStartDependency.prototype.getPriority = function() {
-	return this.priority;
-}
-
 
 /** StartToFinishDependency Methods **/
+Tasks.StartToFinishDependency.prototype = new Tasks.Dependency;
+Tasks.StartToFinishDependency.prototype.constructor = Tasks.StartToFinishDependency;
 
 /**
  * Get the start date of the task.
@@ -634,41 +573,10 @@ Tasks.StartToFinishDependency.prototype.getStartDate = function(week) {
 	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration()));
 }
 
-/**
- * Set the owner of the dependency.  This is done automatically by the Task
- * object's addDependency() method and shouldn't be used elsewhere.
- * @param owner The owner of the dependency.
- */
-Tasks.StartToFinishDependency.prototype.setOwner = function(owner) {
-	this.owner = owner;
-}
-
-/**
- * Get the task that owns the dependency.
- * @return The task that owns the dependency.
- */
-Tasks.StartToFinishDependency.prototype.getOwner = function() {
-	return this.owner;
-}
-
-/**
- * Get the task that the owner is dependent on.
- * @return The task that the owner is dependent on.
- */
-Tasks.StartToFinishDependency.prototype.getDependentOn = function() {
-	return this.dependentOn;
-}
-
-/**
- * Get the priority of the dependency.
- * @return The priority of the dependency.
- */
-Tasks.StartToFinishDependency.prototype.getPriority = function() {
-	return this.priority;
-}
-
 
 /** FixedStartDependency Methods **/
+Tasks.FixedStartDependency.prototype = new Tasks.Dependency;
+Tasks.FixedStartDependency.prototype.constructor = Tasks.FixedStartDependency;
 
 /**
  * Get the start date of the task.
@@ -679,41 +587,10 @@ Tasks.FixedStartDependency.prototype.getStartDate = function(week) {
 	return this.startDate;
 }
 
-/**
- * Set the owner of the dependency.  This is done automatically by the Task
- * object's addDependency() method and shouldn't be used elsewhere.
- * @param owner The owner of the dependency.
- */
-Tasks.FixedStartDependency.prototype.setOwner = function(owner) {
-	this.owner = owner;
-}
-
-/**
- * Get the task that owns the dependency.
- * @return The task that owns the dependency.
- */
-Tasks.FixedStartDependency.prototype.getOwner = function() {
-	return this.owner;
-}
-
-/**
- * Get the task that the owner is dependent on.
- * @return The task that the owner is dependent on.
- */
-Tasks.FixedStartDependency.prototype.getDependentOn = function() {
-	return this.dependentOn;
-}
-
-/**
- * Get the priority of the dependency.
- * @return The priority of the dependency.
- */
-Tasks.FixedStartDependency.prototype.getPriority = function() {
-	return this.priority;
-}
-
 
 /** FixedFinishDependency Methods **/
+Tasks.FixedFinishDependency.prototype = new Tasks.Dependency;
+Tasks.FixedFinishDependency.prototype.constructor = Tasks.FixedFinishDependency;
 
 /**
  * Get the start date of the task.
@@ -722,37 +599,4 @@ Tasks.FixedStartDependency.prototype.getPriority = function() {
  */
 Tasks.FixedFinishDependency.prototype.getStartDate = function(week) {
 	return week.dateAdd(this.endDate, new WorkingWeek.TimeSpan(0, 0, 0, 0, -this.owner.getDuration()));
-}
-
-/**
- * Set the owner of the dependency.  This is done automatically by the Task
- * object's addDependency() method and shouldn't be used elsewhere.
- * @param owner The owner of the dependency.
- */
-Tasks.FixedFinishDependency.prototype.setOwner = function(owner) {
-	this.owner = owner;
-}
-
-/**
- * Get the task that owns the dependency.
- * @return The task that owns the dependency.
- */
-Tasks.FixedFinishDependency.prototype.getOwner = function() {
-	return this.owner;
-}
-
-/**
- * Get the task that the owner is dependent on.
- * @return The task that the owner is dependent on.
- */
-Tasks.FixedFinishDependency.prototype.getDependentOn = function() {
-	return this.dependentOn;
-}
-
-/**
- * Get the priority of the dependency.
- * @return The priority of the dependency.
- */
-Tasks.FixedFinishDependency.prototype.getPriority = function() {
-	return this.priority;
 }
