@@ -32,6 +32,12 @@ var Tasks = {
 		High: 2
 	},
 	
+	/**
+	 * Base dependency object.  Instances of this object should not be created
+	 * as it doesn't do anything on its own.
+	 * @param dependentOn The task on which the dependency's owner is dependent.
+	 * @param priority The priority of the dependency.
+	 */
 	Dependency: function(dependentOn, priority) {
 		this.priority = priority;
 		this.owner = null;
