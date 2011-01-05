@@ -43,9 +43,9 @@ task1.addChild(task1_1);
 task1.addChild(task1_2);
 
 // Set up dependencies
-task2.addDependency(new Tasks.FinishToStartDependency(task1));
-task1_2.addDependency(new Tasks.FinishToStartDependency(task1_1));
-task3.addDependency(new Tasks.FinishToFinishDependency(task2));
+task2.addDependency(new Tasks.FinishToStartDependency(task1, 0));
+task1_2.addDependency(new Tasks.FinishToStartDependency(task1_1, 1800000));
+task3.addDependency(new Tasks.FinishToFinishDependency(task2, 0));
 task4.addDependency(new Tasks.FixedStartDependency(new Date(2011, 0, 1, 9, 30, 0, 0)));
 task5.addDependency(new Tasks.FixedFinishDependency(new Date(2011, 0, 3, 10, 30, 0, 0)));
 

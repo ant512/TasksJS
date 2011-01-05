@@ -37,43 +37,50 @@ var Tasks = {
 	 * as it doesn't do anything on its own.
 	 * @param dependentOn The task on which the dependency's owner is dependent.
 	 * @param priority The priority of the dependency.
+	 * @param lag Time between the dependentOn task ending/starting (as
+	 * appropriate) and the next task starting/ending (ditto).
 	 */
-	Dependency: function(dependentOn, priority) {
+	Dependency: function(dependentOn, priority, lag) {
 		this.priority = priority;
 		this.owner = null;
 		this.dependentOn = dependentOn;
+		this.lag = lag;
 	},
 	
 	/**
 	 * Owning task will start when the task it is dependent on finishes.
 	 * @param dependentOn Task that this task is dependent on.
+	 * @param lag Time between dependentOn finishing and owning task starting.
 	 */
-	FinishToStartDependency: function(dependentOn) {
-		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low);
+	FinishToStartDependency: function(dependentOn, lag) {
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low, lag);
 	},
 	
 	/**
 	 * Owning task will finish when the task it is dependent on finishes.
 	 * @param dependentOn Task that this task is dependent on.
+	 * @param lag Time between dependentOn finishing and owning task finishing.
 	 */
-	FinishToFinishDependency: function(dependentOn) {
-		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low);
+	FinishToFinishDependency: function(dependentOn, lag) {
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low, lag);
 	},
 	
 	/**
 	 * Owning task will start when the task it is dependent on starts.
 	 * @param dependentOn Task that this task is dependent on.
+	 * @param lag Time between dependentOn starting and owning task starting.
 	 */
-	StartToStartDependency: function(dependentOn) {
-		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low);
+	StartToStartDependency: function(dependentOn, lag) {
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low, lag);
 	},
 	
 	/**
 	 * Owning task will finish when the task it is dependent on starts.
 	 * @param dependentOn Task that this task is dependent on.
+	 * @param lag Time between dependentOn starting and owning task finishing.
 	 */
-	StartToFinishDependency: function(dependentOn) {
-		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low);
+	StartToFinishDependency: function(dependentOn, lag) {
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low, lag);
 	},
 	
 	/**
@@ -81,7 +88,7 @@ var Tasks = {
 	 * @param startDate Date on which the task will start.
 	 */
 	FixedStartDependency: function(startDate) {
-		Tasks.Dependency.prototype.constructor.call(this, null, Tasks.DependencyPriority.High);
+		Tasks.Dependency.prototype.constructor.call(this, null, Tasks.DependencyPriority.High, 0);
 		this.startDate = startDate;
 	},
 	
@@ -90,7 +97,7 @@ var Tasks = {
 	 * @param endDate Date on which the task will end.
 	 */
 	FixedFinishDependency: function(endDate) {
-		Tasks.Dependency.prototype.constructor.call(this, null, Tasks.DependencyPriority.High);
+		Tasks.Dependency.prototype.constructor.call(this, null, Tasks.DependencyPriority.High, 0);
 		this.endDate = endDate;
 	}
 }
@@ -523,6 +530,22 @@ Tasks.Dependency.prototype.getPriority = function() {
 	return this.priority;
 }
 
+/**
+ * Get the lag of the dependency.
+ * @return The lag of the dependency.
+ */
+Tasks.Dependency.prototype.getLag = function() {
+	return this.lag;
+}
+
+/**
+ * Set the lag of the dependency.
+ * @param lag The lag of the dependency.
+ */
+Tasks.Dependency.prototype.setLag = function(lag) {
+	this.lag = lag;
+}
+
 
 /** FinishToStartDependency Methods **/
 Tasks.FinishToStartDependency.prototype = new Tasks.Dependency;
@@ -534,7 +557,7 @@ Tasks.FinishToStartDependency.prototype.constructor = Tasks.FinishToStartDepende
  * @return The start date of the task.
  */
 Tasks.FinishToStartDependency.prototype.getStartDate = function(week) {
-	return this.dependentOn.getEndDate();
+	return week.dateAdd(this.dependentOn.getEndDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.lag));
 }
 
 
@@ -548,7 +571,7 @@ Tasks.FinishToFinishDependency.prototype.constructor = Tasks.FinishToFinishDepen
  * @return The start date of the task.
  */
 Tasks.FinishToFinishDependency.prototype.getStartDate = function(week) {
-	return week.dateAdd(this.dependentOn.getEndDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, -this.owner.getDuration()));
+	return week.dateAdd(this.dependentOn.getEndDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, -this.owner.getDuration() + this.lag));
 }
 
 
@@ -562,7 +585,7 @@ Tasks.StartToStartDependency.prototype.constructor = Tasks.StartToStartDependenc
  * @return The start date of the task.
  */
 Tasks.StartToStartDependency.prototype.getStartDate = function(week) {
-	return new Date(this.dependentOn.getStartDate());
+	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.lag));
 }
 
 
@@ -576,7 +599,7 @@ Tasks.StartToFinishDependency.prototype.constructor = Tasks.StartToFinishDepende
  * @return The start date of the task.
  */
 Tasks.StartToFinishDependency.prototype.getStartDate = function(week) {
-	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration()));
+	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration() + this.lag));
 }
 
 
