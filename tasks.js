@@ -139,7 +139,7 @@ var Tasks = {
  * another task, then the start of 2 would also be dependent on the start of 3.
  * Cyclic dependency = impossible to resolve without some nasty, hacky
  * workarounds.
- * @param taskList the array/tree hybrid data structure that contains the
+ * @param taskList The array/tree hybrid data structure that contains the
  * tasks to recalculate.
  * @return An array of task/dependencies.
  */
@@ -185,7 +185,7 @@ Tasks.DateCalculator.prototype.getFlatList = function(tasks) {
  * on any other.
  * Unlike the getFlatList() function, this returns an array of plain task
  * objects.
- * @param taskList the array/tree hybrid data structure that contains the
+ * @param taskList The array/tree hybrid data structure that contains the
  * tasks to recalculate.
  * @return An array of sorted task objects.
  */
@@ -236,12 +236,12 @@ Tasks.DateCalculator.prototype.getSortedList = function(tasks) {
 }
 
 /**
- * Recalculates the start date of all tasks in the list.  Relies on the sort()
- * function to ensure that all tasks on which task T is dependent on are
- * calculated before T is reached.  Recalculating dates becomes a simple matter
- * of asking the task's dependencies for their start dates, and choosing the
- * latest date.
- * @param tasks the array/tree hybrid data structure that contains the
+ * Recalculates the start date of all tasks in the list.  Relies on the
+ * getSortedList() function to ensure that all tasks on which task T is
+ * dependent on are calculated before T is reached.  Recalculating dates becomes
+ * a simple matter of asking the task's dependencies for their start dates, and
+ * choosing the latest date.
+ * @param tasks The array/tree hybrid data structure that contains the
  * tasks to recalculate.
  * @param earliestDate The earliest date for any task.
  * @param week The working week to base date calculations on.
