@@ -28,15 +28,15 @@ week.addShift(WorkingWeek.DayOfWeek.Friday, 13, 30, 0, 0, new WorkingWeek.TimeSp
 var project = new Projects.Project("Test Project", new Date(), week, "ant512");
 
 // Create simple task set
-var task1 = new Tasks.Task("Task 1", 0, 1);
-var task2 = new Tasks.Task("Task 2", 3600000, 2);
-var task3 = new Tasks.Task("Task 3", 3600000, 3);
-var task4 = new Tasks.Task("Task 4", 3600000, 4);
+var task1 = new Tasks.Task("Task 1", 0);
+var task2 = new Tasks.Task("Task 2", 3600000);
+var task3 = new Tasks.Task("Task 3", 3600000);
+var task4 = new Tasks.Task("Task 4", 3600000);
 
-var task1_1 = new Tasks.Task("Task 1.1", 36000000, 1);
-var task1_2 = new Tasks.Task("Task 1.2", 3600000, 2);
+var task1_1 = new Tasks.Task("Task 1.1", 36000000);
+var task1_2 = new Tasks.Task("Task 1.2", 3600000);
 
-var task5 = new Tasks.Task("Task 5", 3600000, 5);
+var task5 = new Tasks.Task("Task 5", 3600000);
 
 // Give task1 some children
 task1.addChild(task1_1);
@@ -59,10 +59,7 @@ project.addTask(task5);
 // Ensure dates are recalculated as tasks have changed
 project.recalculateDates();
 
-
-
 alertTaskArray(project.getTasks());
-
 
 function alertTaskArray(tasks) {
 	var str = "";
