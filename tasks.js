@@ -4,15 +4,13 @@ var Tasks = {
 	 * Task object.
 	 * @param name Name of the task.
 	 * @param duration The length of the task in milliseconds.
-	 * @param orderNumber The order number of the task when it is displayed.
 	 */
-	Task: function(name, duration, orderNumber) {
+	Task: function(name, duration) {
 		this.name = name;
 		this.startDate = new Date();
 		this.endDate = new Date();
 		this.dependencies = new Array();
 		this.duration = duration;
-		this.orderNumber = orderNumber;
 		this.parent = null;
 		this.children = new Array();
 	},
@@ -360,16 +358,6 @@ Tasks.Task.prototype.getAllTaskDependencies = function() {
  */
 Tasks.Task.prototype.getName = function() {
 	return this.name;
-}
-
-/**
- * Gets the order number of the task.  The order number is used to display tasks
- * in the correct order.  Tasks should not have the same order number as one of
- * their siblings.
- * @return The order number of the task.
- */
-Tasks.Task.prototype.getOrderNumber = function() {
-	return this.orderNumber;
 }
 
 /**
