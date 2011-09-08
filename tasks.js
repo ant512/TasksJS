@@ -599,7 +599,7 @@ Tasks.StartToFinishDependency.prototype.constructor = Tasks.StartToFinishDepende
  * @return The start date of the task.
  */
 Tasks.StartToFinishDependency.prototype.getStartDate = function(week) {
-	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, this.owner.getDuration() + this.lag));
+	return week.dateAdd(this.dependentOn.getStartDate(), new WorkingWeek.TimeSpan(0, 0, 0, 0, -this.owner.getDuration() + this.lag));
 }
 
 
