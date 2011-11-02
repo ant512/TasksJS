@@ -21,25 +21,13 @@ var Tasks = {
 	DateCalculator: function() { },
 	
 	/**
-	 * Enum listing all possible dependency priorities.  Dependencies with
-	 * higher priorities override lower priorities when dates are calculated.
-	 */
-	DependencyPriority: {
-		Low: 0,
-		Medium: 1,
-		High: 2
-	},
-	
-	/**
 	 * Base dependency object.  Instances of this object should not be created
 	 * as it doesn't do anything on its own.
 	 * @param dependentOn The task on which the dependency's owner is dependent.
-	 * @param priority The priority of the dependency.
 	 * @param lag Time between the dependentOn task ending/starting (as
 	 * appropriate) and the next task starting/ending (ditto).
 	 */
-	Dependency: function(dependentOn, priority, lag) {
-		this.priority = priority;
+	Dependency: function(dependentOn, lag) {
 		this.owner = null;
 		this.dependentOn = dependentOn;
 		this.lag = lag;
@@ -51,7 +39,7 @@ var Tasks = {
 	 * @param lag Time between dependentOn finishing and owning task starting.
 	 */
 	FinishToStartDependency: function(dependentOn, lag) {
-		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low, lag);
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, lag);
 	},
 	
 	/**
@@ -60,7 +48,7 @@ var Tasks = {
 	 * @param lag Time between dependentOn finishing and owning task finishing.
 	 */
 	FinishToFinishDependency: function(dependentOn, lag) {
-		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low, lag);
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, lag);
 	},
 	
 	/**
@@ -69,7 +57,7 @@ var Tasks = {
 	 * @param lag Time between dependentOn starting and owning task starting.
 	 */
 	StartToStartDependency: function(dependentOn, lag) {
-		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low, lag);
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, lag);
 	},
 	
 	/**
@@ -78,7 +66,7 @@ var Tasks = {
 	 * @param lag Time between dependentOn starting and owning task finishing.
 	 */
 	StartToFinishDependency: function(dependentOn, lag) {
-		Tasks.Dependency.prototype.constructor.call(this, dependentOn, Tasks.DependencyPriority.Low, lag);
+		Tasks.Dependency.prototype.constructor.call(this, dependentOn, lag);
 	},
 	
 	/**
@@ -86,7 +74,7 @@ var Tasks = {
 	 * @param startDate Date on which the task will start.
 	 */
 	FixedStartDependency: function(startDate) {
-		Tasks.Dependency.prototype.constructor.call(this, null, Tasks.DependencyPriority.High, 0);
+		Tasks.Dependency.prototype.constructor.call(this, null, 0);
 		this.startDate = startDate;
 	},
 	
@@ -95,7 +83,7 @@ var Tasks = {
 	 * @param endDate Date on which the task will end.
 	 */
 	FixedFinishDependency: function(endDate) {
-		Tasks.Dependency.prototype.constructor.call(this, null, Tasks.DependencyPriority.High, 0);
+		Tasks.Dependency.prototype.constructor.call(this, null, 0);
 		this.endDate = endDate;
 	}
 }
@@ -441,28 +429,14 @@ Tasks.Task.prototype.getDuration = function() {
  */
 Tasks.Task.prototype.recalculateDates = function(earliestDate, week) {
 	var latestDate = earliestDate;
-	var highestPriority = Tasks.DependencyPriority.Low;
 	
 	for (var i in this.dependencies) {		
 		var dependencyDate = this.dependencies[i].getStartDate(week);
-		var dependencyPriority = this.dependencies[i].getPriority();
 		
-		// Check the priority of the dependency.  Dependencies which are of a
-		// lower priority than we're currently basing our date on can be
-		// ignored.
-		if (dependencyPriority == highestPriority) {
-		
-			// Only update the date if the dependency starts later than the
-			// currently calculated date
-			if (dependencyDate > latestDate) {
-				latestDate = dependencyDate;
-			}
-		} else if (dependencyPriority > highestPriority) {
-			
-			// This dependency has a higher priority than anything we've seen
-			// so far, so we force the date to change
+		// Only update the date if the dependency starts later than the
+		// currently calculated date
+		if (dependencyDate > latestDate) {
 			latestDate = dependencyDate;
-			highestPriority = dependencyPriority;
 		}
 	}
 	
@@ -508,14 +482,6 @@ Tasks.Dependency.prototype.getOwner = function() {
  */
 Tasks.Dependency.prototype.getDependentOn = function() {
 	return this.dependentOn;
-}
-
-/**
- * Get the priority of the dependency.
- * @return The priority of the dependency.
- */
-Tasks.Dependency.prototype.getPriority = function() {
-	return this.priority;
 }
 
 /**
