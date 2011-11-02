@@ -428,10 +428,24 @@ Tasks.Task.prototype.getDuration = function() {
  * @param week The working week to base calculations on.
  */
 Tasks.Task.prototype.recalculateDates = function(earliestDate, week) {
+
+	// Get a list of all dependencies that affect this task.  That includes all
+	// dependencies that this task has and that its parents have.
+	var allDependencies = new Array();
+	var task = this;
+
+	while (task != null) {
+		for (var i in task.getDependencies()) {
+			allDependencies.push(task.getDependencies()[i]);
+		}
+
+		task = task.getParent();
+	}
+
 	var latestDate = earliestDate;
 	
-	for (var i in this.dependencies) {		
-		var dependencyDate = this.dependencies[i].getStartDate(week);
+	for (var i in allDependencies) {		
+		var dependencyDate = allDependencies[i].getStartDate(week);
 		
 		// Only update the date if the dependency starts later than the
 		// currently calculated date
